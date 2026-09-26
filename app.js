@@ -13,6 +13,8 @@ const TASKS = [
 const app = express();
 const port = 3000;
 
+app.use(express.json())
+
 app.get('/hello', (req, res) => {
     res.send('Hello World!');
 });
@@ -37,6 +39,23 @@ app.get('/tasks/:id', (req, res) => {
     }
     res.send(task)
 })
+
+app.post('/tasks', (req, res) => {
+    const { title } = req.body;
+
+    if (!title || typeof (title) != 'string' || title.trim() === '') {
+        return res.status(400).json({ 'error': 'Title cannot be empty' });
+    }
+
+    const maxId = TASKS.reduce((max, task) => (task.id > max ? task.id : max), 0);
+    const newId = maxId + 1;
+
+    const newTask = { id: newId, title: title.trim(), done: false }
+
+    TASKS.push(newTask)
+
+    res.status(201).json(newTask)
+});
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
