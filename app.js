@@ -57,6 +57,43 @@ app.post('/tasks', (req, res) => {
     res.status(201).json(newTask)
 });
 
+app.put('/tasks/:id', (req, res) => {
+    const id = Number(req.params.id);
+    const { title, done } = req.body;
+
+    if (!title || typeof (title) != 'string' || title.trim() === '') {
+        return res.status(400).json({ 'error': 'Title cannot be empty' });
+    }
+
+    if (typeof done !== 'boolean') {
+        return res.status(400).json({ 'error': 'Done cannot be empty' });
+    }
+
+    const task = TASKS.find(t => t.id === id)
+    if (!task) {
+        return res.status(404).send({ "error": `Task ${id} not found` });
+    }
+
+    task.done = done;
+    task.title = title.trim();
+
+    return res.status(200).json(task);
+
+});
+
+app.delete('/tasks/:id', (req, res) => {
+  const id = Number(req.params.id);
+  const taskIndex = TASKS.findIndex(t => t.id === id);
+
+  if (taskIndex === -1) {
+    return res.status(404).json({ error: `Task ${id} not found` });
+  }
+
+  TASKS.splice(taskIndex, 1);
+
+  return res.status(204).send();
+});
+
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });
