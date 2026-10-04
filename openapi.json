@@ -91,16 +91,26 @@
         "/tasks": {
             "get": {
                 "summary": "Get tasks",
-                "description": "Returns all tasks, optionally filtered by completion status.",
+                "description": "Returns all tasks, optionally filtered by completion status and title search.",
                 "parameters": [
                     {
                         "name": "done",
                         "in": "query",
-                        "description": "Filter tasks by completion status.",
                         "required": false,
+                        "description": "Filter tasks by completion status.",
                         "schema": {
                             "type": "boolean",
                             "example": true
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "description": "Search for tasks by title. The search is case-insensitive and matches partial titles.",
+                        "schema": {
+                            "type": "string",
+                            "example": "node"
                         }
                     }
                 ],
@@ -114,6 +124,65 @@
                                     "items": {
                                         "$ref": "#/components/schemas/Task"
                                     }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "examples": {
+                                    "invalidDone": {
+                                        "summary": "Invalid done value",
+                                        "value": {
+                                            "error": "done must be true or false"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Create a new task",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateTaskRequest"
+                            },
+                            "example": {
+                                "title": "Learn OpenAPI"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Task created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Task"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid task title",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Error"
+                                },
+                                "example": {
+                                    "error": "Title cannot be empty"
                                 }
                             }
                         }

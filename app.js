@@ -32,13 +32,28 @@ app.get('/health', (req, res) => {
 })
 
 app.get('/tasks', (req, res) => {
+    const { done, search } = req.query;
     let filteredTasks = TASKS;
 
-    const { done } = req.query;
-
     if (done !== undefined) {
+        if (done !== 'true' && done !== 'false') {
+            return res.status(400).json({
+                error: 'done must be true or false'
+            });
+        }
+
+        const isDone = done === 'true';
+
         filteredTasks = filteredTasks.filter(
-            t => t.done === (done === 'true')
+            t => t.done === isDone
+        );
+    }
+
+    if (search && search.trim() !== '') {
+        const searchTerm = search.trim().toLowerCase();
+
+        filteredTasks = filteredTasks.filter(
+            t => t.title.toLowerCase().includes(searchTerm)
         );
     }
 
