@@ -123,6 +123,18 @@ app.delete('/tasks/:id', (req, res) => {
     return res.status(204).send();
 });
 
+app.get('/stats', (req, res) => {
+    const totalTasks = TASKS.length;
+    const doneTasks = TASKS.filter(t => t.done === true).length;
+    const openTasks = TASKS.filter(t => t.done === false).length;
+
+    return res.json({
+        total: totalTasks,
+        done: doneTasks,
+        open: openTasks
+    });
+});
+
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });

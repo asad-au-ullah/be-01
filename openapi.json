@@ -307,6 +307,29 @@
                     }
                 }
             }
+        },
+        "/stats": {
+            "get": {
+                "summary": "Get task statistics",
+                "description": "Returns the total number of tasks, completed tasks, and open tasks currently stored in memory.",
+                "responses": {
+                    "200": {
+                        "description": "Task statistics",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/TaskStats"
+                                },
+                                "example": {
+                                    "total": 5,
+                                    "done": 3,
+                                    "open": 2
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -388,6 +411,31 @@
                     "error": {
                         "type": "string",
                         "example": "Task 999 not found"
+                    }
+                }
+            },
+            "TaskStats": {
+                "type": "object",
+                "required": [
+                    "total",
+                    "done",
+                    "open"
+                ],
+                "properties": {
+                    "total": {
+                        "type": "integer",
+                        "description": "Total number of tasks.",
+                        "example": 5
+                    },
+                    "done": {
+                        "type": "integer",
+                        "description": "Number of completed tasks.",
+                        "example": 3
+                    },
+                    "open": {
+                        "type": "integer",
+                        "description": "Number of incomplete tasks.",
+                        "example": 2
                     }
                 }
             }
