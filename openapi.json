@@ -330,6 +330,44 @@
                     }
                 }
             }
+        },
+        "/reset": {
+            "post": {
+                "summary": "Reset tasks",
+                "description": "Resets the in-memory task list to the three example seed tasks. Useful for demos and testing.",
+                "responses": {
+                    "200": {
+                        "description": "Tasks successfully reset",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Task"
+                                    }
+                                },
+                                "example": [
+                                    {
+                                        "id": 1,
+                                        "title": "Bring meat",
+                                        "done": false
+                                    },
+                                    {
+                                        "id": 2,
+                                        "title": "Bring eggs",
+                                        "done": true
+                                    },
+                                    {
+                                        "id": 3,
+                                        "title": "Bring fish",
+                                        "done": false
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {

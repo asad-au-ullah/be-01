@@ -3,12 +3,14 @@ import swaggerUi from 'swagger-ui-express';
 import swaggerDocument from './openapi.json' with { type: 'json' };
 
 //#region in-memory
-// id (number), title (text), done (true/false).
-const TASKS = [
+
+const SEED_TASKS = [
     { id: 1, title: 'Bring meat', done: false },
     { id: 2, title: 'Bring eggs', done: true },
     { id: 3, title: 'Bring fish', done: false },
-]
+];
+
+let TASKS = [...SEED_TASKS];
 
 //#endregion
 
@@ -133,6 +135,12 @@ app.get('/stats', (req, res) => {
         done: doneTasks,
         open: openTasks
     });
+});
+
+app.post('/reset', (req, res) => {
+    TASKS = SEED_TASKS.map(task => ({ ...task }));
+
+    return res.status(200).json(TASKS);
 });
 
 app.listen(port, () => {
