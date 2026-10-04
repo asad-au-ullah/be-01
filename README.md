@@ -71,3 +71,7 @@ be-01/
 ├── package.json
 └── README.md
 ```
+
+### The mortality experiment
+
+After creating new tasks and restarting the server, the new tasks disappeared because the API stores tasks only in an in-memory JavaScript array. When the Node.js process restarts, the array is initialized again with the seed tasks, so changes made during the previous process are lost.
