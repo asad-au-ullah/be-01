@@ -1,4 +1,6 @@
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from './openapi.json' with { type: 'json' };
 
 //#region in-memory
 // id (number), title (text), done (true/false).
@@ -14,6 +16,8 @@ const app = express();
 const port = 3000;
 
 app.use(express.json())
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 
 app.get('/hello', (req, res) => {
     res.send('Hello World!');
@@ -35,7 +39,7 @@ app.get('/tasks/:id', (req, res) => {
     const id = Number(req.params.id)
     const task = TASKS.find(t => t.id === id)
     if (!task) {
-        res.status(404).send({ "error": `Task ${id} not found` });
+        return res.status(404).send({ "error": `Task ${id} not found` });
     }
     res.send(task)
 })
