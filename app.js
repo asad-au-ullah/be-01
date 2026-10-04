@@ -32,7 +32,17 @@ app.get('/health', (req, res) => {
 })
 
 app.get('/tasks', (req, res) => {
-    res.send(TASKS);
+    let filteredTasks = TASKS;
+
+    const { done } = req.query;
+
+    if (done !== undefined) {
+        filteredTasks = filteredTasks.filter(
+            t => t.done === (done === 'true')
+        );
+    }
+
+    res.send(filteredTasks);
 })
 
 app.get('/tasks/:id', (req, res) => {
@@ -86,16 +96,16 @@ app.put('/tasks/:id', (req, res) => {
 });
 
 app.delete('/tasks/:id', (req, res) => {
-  const id = Number(req.params.id);
-  const taskIndex = TASKS.findIndex(t => t.id === id);
+    const id = Number(req.params.id);
+    const taskIndex = TASKS.findIndex(t => t.id === id);
 
-  if (taskIndex === -1) {
-    return res.status(404).json({ error: `Task ${id} not found` });
-  }
+    if (taskIndex === -1) {
+        return res.status(404).json({ error: `Task ${id} not found` });
+    }
 
-  TASKS.splice(taskIndex, 1);
+    TASKS.splice(taskIndex, 1);
 
-  return res.status(204).send();
+    return res.status(204).send();
 });
 
 app.listen(port, () => {
