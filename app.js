@@ -1,147 +1,40 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
-import swaggerDocument from './openapi.json' with { type: 'json' };
-
-//#region in-memory
-
-const SEED_TASKS = [
-    { id: 1, title: 'Bring meat', done: false },
-    { id: 2, title: 'Bring eggs', done: true },
-    { id: 3, title: 'Bring fish', done: false },
-];
-
-let TASKS = [...SEED_TASKS];
-
-//#endregion
+import swaggerJsdoc from 'swagger-jsdoc';
+import taskRoutes from './routes/tasks.js';
 
 const app = express();
 const port = 3000;
 
-app.use(express.json())
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(express.json());
 
+// Swagger options configuration pointing to your routes folder[cite: 1]
+const options = {
+    definition: {
+        openapi: "3.0.3",
+        info: {
+            title: "Task API",
+            description: "A simple REST API for managing tasks.",
+            version: "1.0.0"
+        },
+        servers: [
+            {
+                url: `http://localhost:${port}`
+            }
+        ]
+    },
+    apis: ["./routes/*.js"],
+};
 
-app.get('/hello', (req, res) => {
-    res.send('Hello World!');
-});
+const specs = swaggerJsdoc(options);
 
-app.get('/', (req, res) => {
-    res.send({ "name": "Task API", "version": "1.0", "endpoints": ["/tasks"] });
-});
+// Explorer option enabled cleanly here
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
 
-app.get('/health', (req, res) => {
-    res.send({ "status": "ok" });
-})
+// Mount your task routes
+app.use('/', taskRoutes);
 
-app.get('/tasks', (req, res) => {
-    const { done, search } = req.query;
-    let filteredTasks = TASKS;
-
-    if (done !== undefined) {
-        if (done !== 'true' && done !== 'false') {
-            return res.status(400).json({
-                error: 'done must be true or false'
-            });
-        }
-
-        const isDone = done === 'true';
-
-        filteredTasks = filteredTasks.filter(
-            t => t.done === isDone
-        );
-    }
-
-    if (search && search.trim() !== '') {
-        const searchTerm = search.trim().toLowerCase();
-
-        filteredTasks = filteredTasks.filter(
-            t => t.title.toLowerCase().includes(searchTerm)
-        );
-    }
-
-    res.send(filteredTasks);
-})
-
-app.get('/tasks/:id', (req, res) => {
-    const id = Number(req.params.id)
-    const task = TASKS.find(t => t.id === id)
-    if (!task) {
-        return res.status(404).send({ "error": `Task ${id} not found` });
-    }
-    res.send(task)
-})
-
-app.post('/tasks', (req, res) => {
-    const { title } = req.body;
-
-    if (!title || typeof (title) != 'string' || title.trim() === '') {
-        return res.status(400).json({ 'error': 'Title cannot be empty' });
-    }
-
-    const maxId = TASKS.reduce((max, task) => (task.id > max ? task.id : max), 0);
-    const newId = maxId + 1;
-
-    const newTask = { id: newId, title: title.trim(), done: false }
-
-    TASKS.push(newTask)
-
-    res.status(201).json(newTask)
-});
-
-app.put('/tasks/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const { title, done } = req.body;
-
-    if (!title || typeof (title) != 'string' || title.trim() === '') {
-        return res.status(400).json({ 'error': 'Title cannot be empty' });
-    }
-
-    if (typeof done !== 'boolean') {
-        return res.status(400).json({ 'error': 'Done cannot be empty' });
-    }
-
-    const task = TASKS.find(t => t.id === id)
-    if (!task) {
-        return res.status(404).send({ "error": `Task ${id} not found` });
-    }
-
-    task.done = done;
-    task.title = title.trim();
-
-    return res.status(200).json(task);
-
-});
-
-app.delete('/tasks/:id', (req, res) => {
-    const id = Number(req.params.id);
-    const taskIndex = TASKS.findIndex(t => t.id === id);
-
-    if (taskIndex === -1) {
-        return res.status(404).json({ error: `Task ${id} not found` });
-    }
-
-    TASKS.splice(taskIndex, 1);
-
-    return res.status(204).send();
-});
-
-app.get('/stats', (req, res) => {
-    const totalTasks = TASKS.length;
-    const doneTasks = TASKS.filter(t => t.done === true).length;
-    const openTasks = TASKS.filter(t => t.done === false).length;
-
-    return res.json({
-        total: totalTasks,
-        done: doneTasks,
-        open: openTasks
-    });
-});
-
-app.post('/reset', (req, res) => {
-    TASKS = SEED_TASKS.map(task => ({ ...task }));
-
-    return res.status(200).json(TASKS);
-});
+console.log(JSON.stringify(specs.paths, null, 2));
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
