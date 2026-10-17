@@ -34,8 +34,6 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
 // Mount your task routes
 app.use('/', taskRoutes);
 
-console.log(JSON.stringify(specs.paths, null, 2));
-
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`);
 });

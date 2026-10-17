@@ -171,7 +171,7 @@ router.get('/health', (req, res) => {
  * /tasks:
  *   get:
  *     summary: Get tasks
- *     description: Returns all tasks, optionally filtered by completion status and title search.
+ *     description: Returns paginated tasks, optionally filtered by completion status and title search.
  *     parameters:
  *       - name: done
  *         in: query
@@ -187,15 +187,44 @@ router.get('/health', (req, res) => {
  *         schema:
  *           type: string
  *           example: "node"
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         description: Number of tasks to return per page.
+ *         schema:
+ *           type: integer
+ *           example: 2
+ *       - name: offset
+ *         in: query
+ *         required: false
+ *         description: Number of tasks to skip.
+ *         schema:
+ *           type: integer
+ *           example: 2
  *     responses:
  *       200:
- *         description: List of tasks
+ *         description: Paginated list of tasks with metadata
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Task'
+ *               type: object
+ *               properties:
+ *                 totalItems:
+ *                   type: integer
+ *                   example: 5
+ *                 totalPages:
+ *                   type: integer
+ *                   example: 3
+ *                 limit:
+ *                   type: integer
+ *                   example: 2
+ *                 offset:
+ *                   type: integer
+ *                   example: 2
+ *                 tasks:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Task'
  *       400:
  *         description: Invalid query parameter
  *         content:
@@ -226,8 +255,14 @@ router.get('/health', (req, res) => {
  */
 router.get('/tasks', (req, res) => {
     const { done, search } = req.query;
+
+    // Parse query parameters into numbers and handle default values safely
+    let limitValue = req.query.limit ? parseInt(req.query.limit) : 2;
+    let offsetValue = req.query.offset ? parseInt(req.query.offset) : 2;
+
     let filteredTasks = TASKS;
 
+    // Filter by 'done' status if provided
     if (done !== undefined) {
         if (done !== 'true' && done !== 'false') {
             return res.status(400).json({ error: 'done must be true or false' });
@@ -236,12 +271,29 @@ router.get('/tasks', (req, res) => {
         filteredTasks = filteredTasks.filter(t => t.done === isDone);
     }
 
+    // Filter by search term if provided
     if (search && search.trim() !== '') {
         const searchTerm = search.trim().toLowerCase();
         filteredTasks = filteredTasks.filter(t => t.title.toLowerCase().includes(searchTerm));
     }
 
-    res.send(filteredTasks);
+    // 1. Calculate total items matching the filter (before slicing)
+    const totalItems = filteredTasks.length;
+
+    // 2. Calculate total pages
+    const totalPages = Math.ceil(totalItems / limitValue);
+
+    // 3. Apply pagination using array.slice(start, end)
+    const paginatedTasks = filteredTasks.slice(offsetValue, offsetValue + limitValue);
+
+    // 4. Return an object response with both metadata and data
+    res.json({
+        totalItems,
+        totalPages,
+        limit: limitValue,
+        offset: offsetValue,
+        tasks: paginatedTasks
+    });
 });
 
 /**

@@ -75,3 +75,12 @@ be-01/
 ### The mortality experiment
 
 After creating new tasks and restarting the server, the new tasks disappeared because the API stores tasks only in an in-memory JavaScript array. When the Node.js process restarts, the array is initialized again with the seed tasks, so changes made during the previous process are lost.
+
+### Why Real APIs Don't Return "Everything"
+
+When building or consuming real APIs, endpoints don't return everything for the following reasons:
+
+1. **Network Bandwidth & Latency:** Pulling thousands or millions of records at once creates massive JSON payloads. This saturates network bandwidth, spikes response times, and results in a sluggish user experience.
+2. **Memory & Performance Overhead (Backend):** Fetching everything forces the database and your server application to load massive datasets into RAM. This can lead to memory exhaustion, garbage collection pressure, and server crashes (out-of-memory errors).
+3. **Database Scalability:** Unrestricted queries (like large offset skips or full table scans) bypass indexes and lock up database resources, degrading performance for all concurrent users.
+4. **Client-Side Rendering Limits:** Even if a server successfully sends 100,000 items, a frontend application or browser will freeze trying to parse, render, and manage that much DOM data or state at once. 
